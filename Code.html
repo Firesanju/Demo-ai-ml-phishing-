@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AI Phishing Detector - Live Preview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+<style>
+:root{
+  --c1:#667eea;--c2:#764ba2;
+  --danger:#ff6b6b;--safe:#51cf66;--warn:#ffd93d;
+  --bg:#f8fafc;--fg:#2d3748;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Arial}
+body{background:linear-gradient(135deg,var(--c1),var(--c2));min-height:100vh;color:#fff;padding:2rem}
+h1{text-align:center;margin-bottom:.5rem}
+p{text-align:center;opacity:.8;margin-bottom:2rem}
+.card{background:#fff;color:var(--fg);border-radius:12px;padding:1.5rem 2rem;margin-bottom:2rem;box-shadow:0 8px 20px rgba(0,0,0,.1)}
+input,textarea{width:100%;padding:.8rem;border:2px solid #e2e8f0;border-radius:8px;margin-bottom:1rem;resize:vertical}
+button{padding:.8rem 1.4rem;border:none;border-radius:8px;background:var(--c1);color:#fff;font-size:1rem;cursor:pointer;transition:.2s}
+button:hover{transform:translateY(-2px)}
+.hidden{display:none}
+#riskCircle{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:1.2rem;margin-right:1rem}
+#riskLevel{font-size:1.3rem;font-weight:bold}
+.result-card{display:flex;align-items:center;margin-bottom:1rem}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.feature{background:#fff;color:var(--fg);padding:1rem;border-radius:8px;text-align:center}
+footer{text-align:center;font-size:.9rem;opacity:.8;margin-top:2rem}
+</style>
+</head>
+<body>
+
+<h1>🛡️ AI Phishing Detector</h1>
+<p>Enter a URL or paste suspicious email content to scan with AI (demo).</p>
+
+<!-- URL -->
+<div class="card">
+  <h3>Check URL</h3>
+  <input id="urlInput" type="url" placeholder="https://example.com" />
+  <button onclick="checkURL()">Scan URL</button>
+</div>
+
+<!-- Email -->
+<div class="card">
+  <h3>Check Email Content</h3>
+  <textarea id="emailInput" rows="4" placeholder="Paste email text here..."></textarea>
+  <button onclick="checkEmail()">Analyze Email</button>
+</div>
+
+<!-- Results -->
+<div id="results" class="card hidden">
+  <div class="result-card">
+    <div id="riskCircle"></div>
+    <div id="riskLevel">--</div>
+  </div>
+  <div id="resultDetails"></div>
+</div>
+
+<!-- Features -->
+<div class="features">
+  <div class="feature">
+    <h4>🔗 URL Scanning</h4>
+    <small>Domain reputation & SSL checks</small>
+  </div>
+  <div class="feature">
+    <h4>📧 Email Analysis</h4>
+    <small>Detect phishing language & links</small>
+  </div>
+  <div class="feature">
+    <h4>⚡ Instant Results</h4>
+    <small>Client-side AI – no data sent</small>
+  </div>
+</div>
+
+<footer>
+  ⚠️ Demo project – simulated AI, not a production phishing detector.
+</footer>
+
+<script>
+/* ---- SIMULATED AI (for preview) ---- */
+function predict(input,type){
+  // Fake confidence based on simple heuristics
+  let score=0;
+  if(type==='url'){
+    score = /(login|secure|verify|update|\.tk$|\.ml$)/i.test(input)? 0.85 : 0.15;
+  }else{
+    score = /(urgent|suspended account|click.*here|bitcoin)/i.test(input)? 0.9 : 0.1;
+  }
+  const risk=score>0.7?'high':score>0.4?'medium':'low';
+  return {isPhishing:score>0.6,confidence:Math.round(score*100),risk};
+}
+
+function showResults(r,type){
+  const res=document.getElementById('results');
+  const circle=document.getElementById('riskCircle');
+  const level=document.getElementById('riskLevel');
+  const details=document.getElementById('resultDetails');
+
+  res.classList.remove('hidden');
+  circle.textContent=r.confidence+'%';
+  circle.className='';
+  circle.style.background=r.risk==='high'? 'var(--danger)' : r.risk==='medium' ? 'var(--warn)' : 'var(--safe)';
+  level.textContent=r.risk.toUpperCase()+' RISK';
+  details.innerHTML=`
+    <strong>Status:</strong> ${r.isPhishing? '⚠️ PHISHING DETECTED' : '✅ SAFE'}<br>
+    <strong>Confidence:</strong> ${r.confidence}%<br>
+    <strong>Recommendations:</strong>
+    <ul style="margin:.5rem 0 0 1.3rem">
+      ${r.isPhishing? '<li>Do not click links</li><li>Report & delete</li>' : '<li>Looks clean – stay cautious</li>'}
+    </ul>
+  `;
+  res.scrollIntoView({behavior:'smooth'});
+}
+
+async function checkURL(){
+  const val=document.getElementById('urlInput').value.trim();
+  if(!val){alert('Enter a URL');return;}
+  showResults(predict(val,'url'),'URL');
+}
+
+function checkEmail(){
+  const val=document.getElementById('emailInput').value.trim();
+  if(!val){alert('Paste email content');return;}
+  showResults(predict(val,'email'),'Email');
+}
+</script>
+
+</body>
+</html>
